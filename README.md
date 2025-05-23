@@ -82,6 +82,7 @@ ollum = Ollum(
     },
     evaluation={
         'prompt': "Choose the text that best balances absurdity and clarity."
+        # Customizes the selection logic via a different prompt
     },
     mutation={
         'temperature': 0.9  # Uses default generator (openai) with increased temperature
