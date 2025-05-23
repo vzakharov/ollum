@@ -175,3 +175,18 @@ Think of it as:
 ## 📜 License
 
 MIT. Go evolve responsibly.
+
+## The Name
+
+If you’ve made it this far, congrats — either you're *really* curious or just catastrophically distracted. Either way, let’s finally address the name-shaped elephant in the repo.
+
+* **O(LLM)** is a cheeky nod to [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation). Think of it like saying, "This algorithm? Oh, it's wrapped in LLMs all the way down — complexity optional, recursion mandatory."
+* **ollum** (say it with your whole chest: *aw-luhm*) is how we imagined you'd pronounce and import it, because "oh-ell-ell-em" sounds like someone slowly falling down a flight of stairs.
+* Coincidentally (or fatefully?), *ollum* is [Old Norse for "we wielded, we ruled, we caused."](https://en.wiktionary.org/wiki/ollum) We found that out after naming it, but we're absolutely claiming it like it was foretold in the sagas.
+* And no, it has absolutely *nothing* to do with Tolkien's [emotionally unstable jewelry enthusiast](https://en.wikipedia.org/wiki/Gollum). Unless you want it to. We're not your dad.
+
+So there you have it — half algorithm, half accidental Viking prophecy, and just coherent enough to pip install without shame. Just another day at [Glitchporn](https://glitchporn.substack.com).
+
+Go forth and mutate, rebels. 🧬🔥
+
+~ Vova & Finn
