@@ -36,75 +36,93 @@ pip install ollum
 ## 🧪 Quickstart
 
 ```python
-import asyncio
 from ollum import Ollum
-from ollum.generators import openai_generator, claude_generator
-from transformers import pipeline
+from ollum.generators import openai
 
-# Define a custom async generator using transformers
-async def local_generator(prompt, **kwargs):
-    # Use asyncio.to_thread to make a synchronous operation non-blocking
-    return await asyncio.to_thread(
-        lambda: pipeline(
-            "text-generation",
-            model=kwargs.get("model", "mistralai/Mistral-7B-Instruct-v0.2"),
-            device=kwargs.get("device", "cpu")
-        )(
-            prompt, 
-            max_length=kwargs.get("max_length", 500)
-        )[0]["generated_text"]
-    )
-
-# Initialize ollum with these generators
 ollum = Ollum(
-    openai_generator,   # base generator if none specified elsewhere
-    model="gpt-4o",     # default generation args for all steps
-    temperature=0.7,
+    openai,
+    model="gpt-4o",
+    temperature=0.7
+)
+
+# Or even just:
+# ollum = Ollum() # uses `openai, model="gpt-4o", temperature=0.7` by default
+
+prompt = ollum.generate("Write a sarcastic product pitch about toothpaste for vampires")
+print(prompt)
+
+# Async version is also available:
+# prompt = await ollum.agenerate("Write a sarcastic product pitch about toothpaste for vampires")
+```
+
+## 🤖 Customizable Components
+
+### Step Config
+
+Each step (`seeding`, `evaluation`, `mutation`, `crossover`) can be configured with either:
+
+* `'generator'`: a tuple of `(async_function, kwargs)` or just `async_function` by itself
+* `'generators'`: a list of such tuples/functions to be picked at random
+* Plain `kwargs`: interpreted as parameters to the evaluation logic for that step or, if none match, kwargs to the default generator
+
+```python
+# Configure specific steps with different generators or parameters
+ollum = Ollum(
+    openai,
+    model="gpt-4o",
     seeding={
         'generators': [
-            (openai_generator, {'model': 'gpt-4o', 'temperature': 1.2}),
-            (claude_generator, {'model': 'claude-3-opus', 'temperature': 1.0})
+            openai,
+            (openai, {'model': 'gpt-4o', 'temperature': 1.2}),
+            (anthropic, {'model': 'claude-3-opus', 'temperature': 1.0})
         ]
     },
     evaluation={
         'prompt': "Choose the text that best balances absurdity and clarity."
     },
     mutation={
-        'generator': (local_generator, {'temperature': 0.7})
-    },
-    crossover={
-        'temperature': 0.9,
-        'top_p': 0.85
+        'temperature': 0.9  # Uses default generator (openai) with increased temperature
     },
     budget_usd_per_hour=0.10
 )
-
-prompt = ollum.generate("Write a sarcastic product pitch about toothpaste for vampires")
-# Or use async, where supported:
-# prompt = await ollum.agenerate("Write a sarcastic product pitch about toothpaste for vampires")
-
-print(prompt)
 ```
 
-## 🤖 Customizable Components
+Any parameters not customized for a step will be taken from the default generator defined above step configs.
 
-### Shared Base Args
+### Custom Generators
 
-Any `**kwargs` passed to `Ollum(...)` are used across all steps (seeding, mutation, crossover, evaluation) unless specifically overridden by that step's config.
+You can create your own generators for any step. All generators must be async or wrapped with a decorator to make them async:
 
-This provides a convenient way to set a common model, API key, decoding parameters, etc., without duplicating.
+```python
+from ollum import Ollum
+from ollum.generators import openai
+from ollum.utils import run_in_thread
+from transformers import pipeline
 
-### Step Config
+# Use the decorator to create an async generator
+@run_in_thread
+def local_generator(prompt: str):
+    return pipeline(
+        "text-generation",
+        model="mistralai/Mistral-7B-Instruct-v0.2",
+        device="cpu"
+    )(
+        prompt, 
+        max_length=500
+    )[0]["generated_text"]
 
-Each step (`seeding`, `evaluation`, `mutation`, `crossover`) can be configured with either:
-
-* `'generator'`: a tuple of `(async_function, kwargs)`
-* `'generators'`: a list of such tuples to be picked at random
-* Plain `kwargs`: interpreted as parameters to the evaluation logic for that step or, if none match, kwargs to the default generator
+# Use your custom generator in ollum
+ollum = Ollum(
+    openai,
+    mutation={
+        'generator': local_generator
+    }
+)
+```
 
 ### Async-First Design
 
-O(LLM) is designed to be async-first. All built-in generators (like `openai_generator` and `claude_generator`) are async functions, and any custom generators you define should also be async or be wrapped with `asyncio.to_thread` as shown in the example above.
+O(LLM) is designed to be async-first. All built-in generators (e.g. `openai` and `anthropic`, as imported from `ollum.generators`) are async functions, and any custom generators you define should also be async or be wrapped with the provided `run_in_thread` decorator as shown in the example above.
 
 While the package provides both `generate()` and `agenerate()` methods, named this way as per convention, the synchronous version is just a convenience wrapper that runs the async function in an event loop. For best performance, especially when running multiple generations, use the async interface.
 
@@ -143,7 +161,16 @@ Think of it as:
 
 ## 🛣 Roadmap
 
-*
+* **More Built-in Generators**: Support for additional LLM providers (Gemini, Cohere, etc.)
+* **Colab Notebook**: Interactive examples and templates for quick experimentation
+* **MCP Server**: Managed computation environment for distributed evolution
+* **Configurable Evaluators**: 
+  * Code evaluation through sandbox execution and test running
+  * Image evaluation with dedicated vision models
+  * User/crowd-facing interfaces for human-in-the-loop comparisons
+* **Population Analytics**: Track and visualize evolution progress and population diversity
+* **Sub-problem Decomposition**: Break complex problems into parts that evolve separately
+* Have an idea? [Open an issue](https://github.com/vzakharov/ollum/issues) or [submit a PR](https://github.com/vzakharov/ollum/pulls).
 
 ## 📜 License
 
