@@ -66,6 +66,9 @@ Each step (`seeding`, `evaluation`, `mutation`, `crossover`) can be configured w
 * Plain `kwargs`: interpreted as parameters to the evaluation logic for that step or, if none match, kwargs to the default generator
 
 ```python
+from ollum import Ollum
+from ollum.generators import openai, anthropic
+
 # Configure specific steps with different generators or parameters
 ollum = Ollum(
     openai,
